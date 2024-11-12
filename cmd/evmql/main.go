@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	client, err := ethclient.Dial("https://sepolia.infura.io/v3/")
+	client, err := ethclient.Dial("https://sepolia.infura.io/v3/54c480c8e4074560b0a4c7394bbd3b69")
 	if err != nil {
 		log.Fatalf("Failed to connect to Ethereum client: %v", err)
 	}
