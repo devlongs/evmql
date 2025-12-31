@@ -9,12 +9,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/devlongs/evmql/config"
 	"github.com/devlongs/evmql/internal/cache"
 	"github.com/devlongs/evmql/internal/executor"
 	"github.com/devlongs/evmql/internal/logger"
 	"github.com/devlongs/evmql/internal/parser"
 	"github.com/devlongs/evmql/internal/repl"
-	"github.com/devlongs/evmql/pkg/config"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 

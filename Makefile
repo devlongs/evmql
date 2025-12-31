@@ -4,7 +4,8 @@ BINARY_NAME=evmql
 
 
 build:
-	@go build -o $(BINARY_NAME) cmd/evmql/main.go
+	@echo "Building evmql..."
+	@go build -o bin/evmql cmd/evmql/main.go
 
 test:
 	@go test ./...

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/devlongs/evmql/pkg/queries"
+	"github.com/devlongs/evmql/queries"
 	"github.com/ethereum/go-ethereum/common"
 )
 

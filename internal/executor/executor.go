@@ -9,7 +9,7 @@ import (
 
 	"github.com/devlongs/evmql/internal/cache"
 	"github.com/devlongs/evmql/internal/logger"
-	"github.com/devlongs/evmql/pkg/queries"
+	"github.com/devlongs/evmql/queries"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
