@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -207,15 +206,11 @@ func LoadConfig(configPath string, args []string) (*Config, error) {
 	if yourKey := os.Getenv("YOUR_API_KEY"); yourKey != "" {
 		// Replace placeholders in node URLs
 		for name, network := range config.Networks {
-			if strings.Contains(network.NodeURL, "YOUR_KEY") {
-				network.NodeURL = strings.Replace(network.NodeURL, "YOUR_KEY", yourKey, 1)
-				config.Networks[name] = network
-			}
+			network.NodeURL = strings.Replace(network.NodeURL, "YOUR_KEY", yourKey, 1)
+			config.Networks[name] = network
 		}
 
-		if strings.Contains(config.Node.URL, "YOUR_KEY") {
-			config.Node.URL = strings.Replace(config.Node.URL, "YOUR_KEY", yourKey, 1)
-		}
+		config.Node.URL = strings.Replace(config.Node.URL, "YOUR_KEY", yourKey, 1)
 	}
 
 	return config, nil
@@ -235,7 +230,7 @@ func SaveConfig(config *Config, path string) error {
 	}
 
 	// Write file
-	if err := ioutil.WriteFile(path, data, 0644); err != nil {
+	if err := os.WriteFile(path, data, 0644); err != nil {
 		return fmt.Errorf("error writing config file: %w", err)
 	}
 
@@ -247,16 +242,34 @@ func ValidateConfig(config *Config) error {
 		return errors.New("node URL cannot be empty")
 	}
 
+	if strings.Contains(config.Node.URL, "YOUR_KEY") {
+		return errors.New("node URL contains placeholder 'YOUR_KEY' - please set a valid API key")
+	}
+
 	if config.Query.MaxBlockRange <= 0 {
 		return errors.New("max block range must be positive")
+	}
+
+	if config.Query.MaxBlockRange > 10000 {
+		return errors.New("max block range cannot exceed 10000 to prevent resource exhaustion")
 	}
 
 	if config.Query.TimeoutSeconds <= 0 {
 		return errors.New("query timeout must be positive")
 	}
 
+	if config.Query.TimeoutSeconds > 300 {
+		return errors.New("query timeout cannot exceed 300 seconds")
+	}
+
 	if len(config.Networks) == 0 {
 		return errors.New("at least one network must be defined")
+	}
+
+	for name, network := range config.Networks {
+		if strings.Contains(network.NodeURL, "YOUR_KEY") {
+			return fmt.Errorf("network '%s' contains placeholder 'YOUR_KEY' - please set a valid API key", name)
+		}
 	}
 
 	return nil
