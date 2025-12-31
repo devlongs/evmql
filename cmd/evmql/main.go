@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/devlongs/evmql/internal/cache"
 	"github.com/devlongs/evmql/internal/executor"
 	"github.com/devlongs/evmql/internal/logger"
 	"github.com/devlongs/evmql/internal/parser"
@@ -130,6 +131,19 @@ func main() {
 
 	// Set timeout for query execution
 	queryExecutor.SetTimeout(time.Duration(cfg.Query.TimeoutSeconds) * time.Second)
+
+	// Initialize cache if enabled
+	if cfg.Cache.Enabled {
+		queryCache := cache.NewInMemoryCache(
+			cfg.Cache.MaxItems,
+			cfg.Cache.DefaultTTL,
+			cfg.Cache.CleanupEvery,
+		)
+		queryExecutor.SetCache(queryCache)
+		logger.Info("cache enabled", "max_items", cfg.Cache.MaxItems, "ttl", cfg.Cache.DefaultTTL)
+	} else {
+		logger.Info("cache disabled")
+	}
 
 	// If in interactive mode, start REPL
 	if *interactiveMode {
