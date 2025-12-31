@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/devlongs/evmql/internal/executor"
+	"github.com/devlongs/evmql/internal/logger"
 	"github.com/devlongs/evmql/internal/parser"
 )
 
@@ -57,7 +58,8 @@ func Start(parser *parser.Parser, executor *executor.QueryExecutor, config Confi
 		// Process the query
 		query, err := parser.ParseQuery(input)
 		if err != nil {
-			fmt.Printf("Error parsing query: %v\n", err)
+			logger.Error("query parsing failed", "error", err, "input", input)
+			fmt.Printf("Error: %v\n", err)
 			continue
 		}
 
@@ -67,15 +69,18 @@ func Start(parser *parser.Parser, executor *executor.QueryExecutor, config Confi
 		cancel()
 
 		if err != nil {
-			fmt.Printf("Error executing query: %v\n", err)
+			logger.Error("query execution failed", "error", err, "query", query.Method)
+			fmt.Printf("Error: %v\n", err)
 			continue
 		}
 
+		logger.Info("query executed", "method", query.Method, "address", query.Address.Hex())
 		fmt.Printf("Result: %v\n", result)
 
 		// Show execution time if enabled
 		if config.ShowTimings {
 			duration := time.Since(startTime)
+			logger.Debug("execution time", "duration", duration)
 			fmt.Printf("Executed in %v\n", duration)
 		}
 

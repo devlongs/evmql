@@ -37,7 +37,6 @@ func InitConfigFile(path string) error {
 		return err
 	}
 
-	fmt.Printf("Created default configuration file at %s\n", path)
 	return nil
 }
 

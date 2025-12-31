@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -11,6 +10,7 @@ import (
 	"time"
 
 	"github.com/devlongs/evmql/internal/executor"
+	"github.com/devlongs/evmql/internal/logger"
 	"github.com/devlongs/evmql/internal/parser"
 	"github.com/devlongs/evmql/internal/repl"
 	"github.com/devlongs/evmql/pkg/config"
@@ -37,7 +37,7 @@ func main() {
 
 	// Show version if requested
 	if *showVersion {
-		fmt.Printf("EVMQL Version %s\n", Version)
+		logger.Info("version", "version", Version)
 		return
 	}
 
@@ -86,7 +86,7 @@ func main() {
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		sig := <-sigCh
-		fmt.Printf("\nReceived signal %v, shutting down...\n", sig)
+		logger.Info("shutdown initiated", "signal", sig)
 		cancel()
 		// Give a little time for graceful shutdown then force exit
 		time.Sleep(500 * time.Millisecond)
@@ -94,31 +94,33 @@ func main() {
 	}()
 
 	// Connect to Ethereum node
-	fmt.Printf("Connecting to Ethereum node at %s...\n", cfg.Node.URL)
+	logger.Info("connecting to ethereum node", "url", cfg.Node.URL)
 
 	clientCtx, clientCancel := context.WithTimeout(ctx, cfg.Node.Timeout)
 	defer clientCancel()
 
 	client, err := ethclient.DialContext(clientCtx, cfg.Node.URL)
 	if err != nil {
-		log.Fatalf("Failed to connect to Ethereum client: %v", err)
+		logger.Error("failed to connect to ethereum node", "error", err)
+		log.Fatalf("Failed to connect to Ethereum node: %v", err)
 	}
 	defer client.Close()
 
-	// Get chain ID to confirm connection
-	chainID, err := client.ChainID(clientCtx)
+	// Verify connection and get chain ID
+	chainID, err := client.ChainID(ctx)
 	if err != nil {
+		logger.Error("failed to get chain ID", "error", err)
 		log.Fatalf("Failed to get chain ID: %v", err)
 	}
-	fmt.Printf("Connected to chain with ID: %d\n", chainID)
+	logger.Info("connected to ethereum", "chain_id", chainID)
 
 	// Check if connected to the expected network
 	if chainID.Int64() != cfg.DefaultChainID {
 		networkInfo, found := cfg.GetNetworkByChainID(chainID.Int64())
 		if found {
-			fmt.Printf("Warning: Connected to %s instead of the configured default network\n", networkInfo.Name)
+			logger.Warn("network mismatch", "connected_to", networkInfo.Name, "expected", "default network")
 		} else {
-			fmt.Printf("Warning: Connected to chain ID %d, which doesn't match any configured network\n", chainID)
+			logger.Warn("unknown network", "chain_id", chainID)
 		}
 	}
 
@@ -152,11 +154,12 @@ func main() {
 
 			result, err := queryExecutor.Execute(queryCtx, query)
 			if err != nil {
+				logger.Error("query execution failed", "error", err)
 				log.Fatalf("Error executing query: %v", err)
 			}
-			fmt.Printf("Result: %v\n", result)
+			logger.Info("query result", "result", result)
 		} else {
-			fmt.Println("No query provided. Run with -interactive flag for REPL mode or provide a query as an argument.")
+			logger.Info("no query provided", "hint", "use -interactive flag for REPL mode or provide a query as an argument")
 		}
 	}
 }
