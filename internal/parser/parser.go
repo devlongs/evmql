@@ -20,7 +20,12 @@ func NewParser() *Parser {
 
 // ParseQuery parses the EVMQL query string and returns a Query object
 func (p *Parser) ParseQuery(queryStr string) (*queries.Query, error) {
-	queryStr = strings.TrimSpace(queryStr)
+	queryStr = SanitizeInput(queryStr)
+
+	if len(queryStr) == 0 {
+		return nil, errors.New("query cannot be empty")
+	}
+
 	if len(queryStr) > 10000 {
 		return nil, errors.New("query too long: maximum 10000 characters")
 	}
@@ -46,10 +51,13 @@ func (p *Parser) ParseQuery(queryStr string) (*queries.Query, error) {
 		Method: method,
 	}
 
-	// Parse the address
-	address := parts[3]
+	// Parse and sanitize the address
+	address := NormalizeAddress(parts[3])
+	if !ValidateAddressFormat(address) {
+		return nil, fmt.Errorf("invalid Ethereum address format: %s", TruncateForDisplay(parts[3], 50))
+	}
 	if !common.IsHexAddress(address) {
-		return nil, fmt.Errorf("invalid Ethereum address: %s (must be 42 character hex starting with 0x)", address)
+		return nil, fmt.Errorf("invalid Ethereum address: %s (must be 42 character hex starting with 0x)", TruncateForDisplay(address, 50))
 	}
 	query.Address = common.HexToAddress(address)
 
@@ -59,23 +67,26 @@ func (p *Parser) ParseQuery(queryStr string) (*queries.Query, error) {
 			return nil, errors.New("BLOCK keyword requires both from and to block numbers")
 		}
 
-		fromBlock, ok := new(big.Int).SetString(parts[5], 10)
+		fromBlockStr := strings.TrimSpace(parts[5])
+		toBlockStr := strings.TrimSpace(parts[6])
+
+		fromBlock, ok := new(big.Int).SetString(fromBlockStr, 10)
 		if !ok || fromBlock.Sign() < 0 {
-			return nil, fmt.Errorf("invalid from block: %s (must be non-negative integer)", parts[5])
+			return nil, fmt.Errorf("invalid from block: %s (must be non-negative integer)", TruncateForDisplay(fromBlockStr, 20))
 		}
 
-		toBlock, ok := new(big.Int).SetString(parts[6], 10)
+		toBlock, ok := new(big.Int).SetString(toBlockStr, 10)
 		if !ok || toBlock.Sign() < 0 {
-			return nil, fmt.Errorf("invalid to block: %s (must be non-negative integer)", parts[6])
+			return nil, fmt.Errorf("invalid to block: %s (must be non-negative integer)", TruncateForDisplay(toBlockStr, 20))
 		}
 
 		if fromBlock.Cmp(toBlock) > 0 {
-			return nil, fmt.Errorf("from block (%s) cannot be greater than to block (%s)", parts[5], parts[6])
+			return nil, fmt.Errorf("from block cannot be greater than to block")
 		}
 
 		blockRange := new(big.Int).Sub(toBlock, fromBlock)
 		if blockRange.Cmp(big.NewInt(10000)) > 0 {
-			return nil, fmt.Errorf("block range too large: %s blocks (maximum: 10000)", blockRange.String())
+			return nil, fmt.Errorf("block range too large: %d blocks (maximum: 10000)", blockRange.Int64())
 		}
 
 		query.FromBlock = fromBlock

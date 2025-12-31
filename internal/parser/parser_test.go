@@ -123,7 +123,7 @@ func TestParseQuery_InvalidQueries(t *testing.T) {
 		{
 			name:        "Empty query",
 			queryStr:    "",
-			expectedErr: "invalid query format",
+			expectedErr: "query cannot be empty",
 		},
 		{
 			name:        "Missing FROM keyword",

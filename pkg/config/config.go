@@ -246,6 +246,10 @@ func ValidateConfig(config *Config) error {
 		return errors.New("node URL contains placeholder 'YOUR_KEY' - please set a valid API key")
 	}
 
+	if err := ValidateNodeURL(config.Node.URL); err != nil {
+		return fmt.Errorf("invalid node URL format")
+	}
+
 	if config.Query.MaxBlockRange <= 0 {
 		return errors.New("max block range must be positive")
 	}
@@ -267,8 +271,17 @@ func ValidateConfig(config *Config) error {
 	}
 
 	for name, network := range config.Networks {
+		sanitizedName := SanitizeNetworkName(name)
+		if sanitizedName == "" {
+			return errors.New("network name contains invalid characters")
+		}
+
 		if strings.Contains(network.NodeURL, "YOUR_KEY") {
-			return fmt.Errorf("network '%s' contains placeholder 'YOUR_KEY' - please set a valid API key", name)
+			return fmt.Errorf("network contains placeholder 'YOUR_KEY' - please set a valid API key")
+		}
+
+		if err := ValidateNodeURL(network.NodeURL); err != nil {
+			return fmt.Errorf("network has invalid URL format")
 		}
 	}
 

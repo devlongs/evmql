@@ -7,7 +7,7 @@
 
 EVMQL provides a familiar, SQL-inspired syntax for interacting with blockchain data. It aims to simplify blockchain queries and data retrieval for developers, analysts, and users familiar with SQL.
 
-## 📋 Overview
+## Overview
 
 EVMQL bridges the gap between traditional database querying and blockchain data access by providing:
 
@@ -16,23 +16,23 @@ EVMQL bridges the gap between traditional database querying and blockchain data 
 - Interactive shell with history and auto-completion
 - Easily extensible architecture for custom query types
 
-## 🚧 Development Status
+## Development Status
 
 This project is under active development with the following status:
 
 | Feature                    | Status       |
 |----------------------------|--------------|
-| Basic query structure      | ✅ Complete  |
-| Balance queries            | ✅ Complete  |
-| Log queries                | ✅ Complete  |
-| Transaction queries        | ✅ Complete  |
-| Configuration management   | ✅ Complete  |
-| Query result formatting    | 🔄 In Progress |
-| Smart contract interaction | 📅 Planned   |
-| Comprehensive testing      | 📅 Planned   |
-| Advanced filtering         | 📅 Planned   |
+| Basic query structure      | Complete     |
+| Balance queries            | Complete     |
+| Log queries                | Complete     |
+| Transaction queries        | Complete     |
+| Configuration management   | Complete     |
+| Query result formatting    | In Progress  |
+| Smart contract interaction | Planned      |
+| Comprehensive testing      | Planned      |
+| Advanced filtering         | Planned      |
 
-## 🚀 Installation
+## Installation
 
 ### Prerequisites
 
@@ -56,7 +56,7 @@ go build -o evmql cmd/evmql/main.go
 ./evmql --generate-config
 ```
 
-## 💻 Usage
+## Usage
 
 ### Interactive Mode
 
@@ -91,7 +91,7 @@ Specify a network to connect to:
 ../evmql --network sepolia
 ```
 
-### ⚙️ Configuration
+### Configuration
 EVMQL uses a layered configuration system:
 
 1. Default values built into the application
